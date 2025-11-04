@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>DM被っちゃやーよ出題ジェネレーター</title>
+  <style>
+    body { font-family: "Meiryo", sans-serif; text-align: center; margin-top: 50px; }
+    textarea { width: 300px; height: 100px; }
+    button { margin: 10px; padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h1>DM被っちゃやーよ出題ジェネレーター</h1>
+
+  <form action="/submit" method="POST">
+    <textarea name="conditions" rows="5" cols="40" placeholder="追加したい条件を1行ずつ入力してください、デフォルトでも30種類あります"></textarea><br>
+    <button type="submit">送信</button>
+  </form>
+
+  {% if result %}
+  <p>{{ result }}</p>
+  {% endif %}
+
+  <hr>
+
+  <label>
+    <input type="checkbox" id="unique-mode" {% if unique_mode %}checked{% endif %}>
+    同じ出題を出さないモード
+  </label>
+
+  <br><br>
+
+  <button id="get-question">出題開始</button>
+  <div id="question"></div>
+
+  <hr>
+  <h3>成績</h3>
+  <p>成功：<span id="success-count">{{ success }}</span>　失敗：<span id="fail-count">{{ fail }}</span></p>
+
+  <script>
+    const questionDiv = document.getElementById('question');
+    const successCount = document.getElementById('success-count');
+    const failCount = document.getElementById('fail-count');
+    const uniqueCheckbox = document.getElementById('unique-mode');
+
+    // ✅ モード切り替え時
+    uniqueCheckbox.addEventListener('change', async () => {
+      const mode = uniqueCheckbox.checked;
+      await fetch('/toggle_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unique_mode: mode })
+      });
+      questionDiv.innerHTML = `<p>モードを「${mode ? '非重複' : 'ランダム'}」に切り替えました。</p>`;
+    });
+
+    // ✅ 出題ボタン
+    document.getElementById('get-question').addEventListener('click', async () => {
+      const res = await fetch('/get_question', { method: 'POST' });
+      const data = await res.json();
+      questionDiv.innerHTML = `
+        <h3>出題：</h3>
+        <p>文明：${data.bunmei}</p>
+        <p>コスト条件：${data.cost}</p>
+        <p>特性：${data.jyouken}</p>
+        <button id="success-btn">成功！</button>
+        <button id="fail-btn">失敗…</button>
+      `;
+      document.getElementById('success-btn').addEventListener('click', () => sendResult('success'));
+      document.getElementById('fail-btn').addEventListener('click', () => sendResult('fail'));
+    });
+
+    // ✅ 成績記録
+    async function sendResult(resultType) {
+      const res = await fetch('/record_result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ result: resultType })
+      });
+      const data = await res.json();
+      successCount.textContent = data.success;
+      failCount.textContent = data.fail;
+      questionDiv.innerHTML += `<p>記録しました！（成功：${data.success}, 失敗：${data.fail}）</p>`;
+    }
+  </script>
+</body>
+</html>

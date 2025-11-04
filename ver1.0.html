@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>DM被っちゃやーよ（文明＋コスト出題）</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #fafafa; }
+  h1 { margin-top: 30px; }
+  button { font-size: 18px; padding: 10px 20px; margin: 15px; }
+  #output { font-size: 22px; margin-top: 30px; line-height: 1.8; }
+</style>
+</head>
+<body>
+  <h1>DM被っちゃやーよ（仮）</h1>
+  <button onclick="generateQuestion()">出題する！</button>
+  <div id="output">ここに出題が表示されます</div>
+
+<script>
+function generateQuestion() {
+  // 文明リスト
+  const bunmei = [' ', '火', '水', '光', '闇', '自然'];
+
+  // 文明のランダムシャッフル
+  let arr = [1, 2, 3, 4, 5];
+  arr.sort(() => Math.random() - 0.5);
+
+  // 文明の組み合わせタイプを決定 (0～3)
+  const collorx = Math.floor(Math.random() * 4);
+  let bunmeiText = "";
+
+  if (collorx === 0) {
+    bunmeiText = bunmei[arr[0]];
+  } else if (collorx === 1) {
+    bunmeiText = `${bunmei[arr[1]]} かつ ${bunmei[arr[0]]}`;
+  } else if (collorx === 2) {
+    bunmeiText = `${bunmei[arr[2]]} かつ ${bunmei[arr[1]]} かつ ${bunmei[arr[0]]}`;
+  } else {
+    bunmeiText = "五文明 or ゼロ文明";
+  }
+
+  // コスト条件
+  let cost_sf = [1,2,3,4,5,6,7,8,9,10];
+  cost_sf.sort(() => Math.random() - 0.5);
+  let costunder = cost_sf[1];
+  let costupper = cost_sf[2];
+  if (costunder > costupper) [costunder, costupper] = [costupper, costunder];
+
+  let costText = "";
+  if (costupper === 10) {
+    costText = "コスト10以上";
+  } else {
+    costText = `コスト ${costunder} ～ コスト ${costupper}`;
+  }
+
+  // 追加条件（仮）: あなたが定義した jyouken リストを使う
+  const jyouken = [
+    "進化クリーチャーである",
+    "ブロッカーを持つ",
+    "スピードアタッカーを持つ",
+    "パワーが6000以上",
+    "名前に『ドラゴン』を含む"
+  ];
+  const randomJy = Math.floor(Math.random() * jyouken.length);
+  const jyoukenText = jyouken[randomJy];
+
+  // 結果をまとめて表示
+  const output = document.getElementById("output");
+  output.innerHTML = `
+    文明条件：${bunmeiText}<br>
+    コスト条件：${costText}<br>
+    ${jyoukenText}
+  `;
+}
+</script>
+</body>
+</html>
